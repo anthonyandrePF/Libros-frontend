@@ -3,7 +3,7 @@ import { getLibrosDestacados } from "../services/libroService";
 import { getAutores } from "../services/autorService";
 import BookCard from "../components/BookCard";
 import SwiperCarouselDestacados from "../components/Carousel/SwiperCarouselDestacados"; // <-- añadido
-
+import HeroSlider from "../components/Carousel/HeroSlider"; // <-- añadido
 export default function HomePage() {
   const [ediciones, setEdiciones] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,23 +48,13 @@ export default function HomePage() {
   return (
     <div className="p-8 min-h-screen" style={{ backgroundColor: '#f5f1e8' }}>
       {/* Sección de bienvenida */}
-      <section className="text-center py-20 bg-gradient-to-r from-gray-100 to-white rounded-lg shadow-sm">
-        <h1 className="text-5xl font-extrabold mb-4">
-          Descubre tu próxima gran lectura
-        </h1>
-        <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-          Encuentra historias que transformarán tu perspectiva y alimentarán tu
-          imaginación.
-        </p>
-        <div className="flex justify-center gap-4">
-          <button className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition">
-            Explorar catálogo
-          </button>
-          <button className="px-6 py-3 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-            Ver categorías
-          </button>
-        </div>
-      </section>
+      {/* Hero Slider */}
+   <section class="hero-section">
+    <div class="container">
+      <HeroSlider />
+    </div>
+  </section>
+   
 
       {/* Sección de libros */}
       <section className="mt-16">
