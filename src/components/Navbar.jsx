@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion"; // 👈 Importa Framer Motion
+import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart } from "lucide-react";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -10,7 +11,11 @@ export default function Navbar() {
   useEffect(() => {
     const storedUser = localStorage.getItem("usuario");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch {
+        localStorage.removeItem("usuario");
+      }
     }
   }, []);
 
@@ -22,6 +27,7 @@ export default function Navbar() {
 
   return (
     <nav className="flex justify-between items-center p-4 shadow-sm bg-white sticky top-0 z-50">
+      {/* --- Logo y nombre --- */}
       <div className="flex items-center gap-2">
         <span className="text-2xl">📚</span>
         <Link
@@ -32,18 +38,32 @@ export default function Navbar() {
         </Link>
       </div>
 
+      {/* --- Enlaces principales --- */}
       <div className="flex items-center gap-8">
-        <Link to="/" className="hover:text-blue-600 transition">Catálogo</Link>
-        <Link to="/categorias" className="hover:text-blue-600 transition">Categorías</Link>
-        <Link to="/autores" className="hover:text-blue-600 transition">Autores</Link>
+        <Link to="/categorias" className="hover:text-blue-600 transition">
+          Categorías
+        </Link>
+
+        {/* --- Icono carrito --- */}
+        <Link
+          to="/carrito"
+          className="hover:text-blue-600 transition relative flex items-center"
+        >
+          <ShoppingCart className="w-6 h-6" />
+        </Link>
 
         {/* --- Menú del usuario --- */}
         <div className="relative">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-full hover:bg-gray-100 transition"
+            className="p-2 rounded-full hover:bg-gray-100 transition flex items-center gap-2"
           >
             <span className="text-2xl">👤</span>
+            {user && (
+              <span className="text-sm font-medium text-gray-800">
+                {user.nombre || "Usuario"}
+              </span>
+            )}
           </button>
 
           <AnimatePresence>
@@ -105,3 +125,4 @@ export default function Navbar() {
     </nav>
   );
 }
+  
