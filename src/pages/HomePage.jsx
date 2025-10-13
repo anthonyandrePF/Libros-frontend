@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getLibrosDestacados } from "../services/libroService";
 import { getAutores } from "../services/autorService";
 import BookCard from "../components/BookCard";
+import SwiperCarouselDestacados from "../components/Carousel/SwiperCarouselDestacados"; // <-- añadido
 
 export default function HomePage() {
   const [ediciones, setEdiciones] = useState([]);
@@ -45,7 +46,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 min-h-screen" style={{ backgroundColor: '#f5f1e8' }}>
       {/* Sección de bienvenida */}
       <section className="text-center py-20 bg-gradient-to-r from-gray-100 to-white rounded-lg shadow-sm">
         <h1 className="text-5xl font-extrabold mb-4">
@@ -70,7 +71,15 @@ export default function HomePage() {
         <h2 className="text-3xl font-bold mb-8 text-gray-800">
           Libros destacados
         </h2>
+<br />
 
+        <section className="carousel_Destacados_section">
+          <div className="container">
+            <SwiperCarouselDestacados />
+          </div>
+        </section>
+
+        <br />
         {ediciones.length === 0 ? (
           <p className="text-center text-gray-500">No hay libros disponibles.</p>
         ) : (
