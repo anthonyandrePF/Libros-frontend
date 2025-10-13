@@ -3,8 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
+import Categoria from "./pages/Categoria";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import Perfil from "./pages/Perfil";
 
 export default function App() {
   return (
@@ -19,6 +21,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/categoria" element={<Categoria />} />
+            <Route path="/perfil" element={<Perfil />} />
           </Routes>
         </main>
 
