@@ -4,8 +4,8 @@ import { Navigation, Autoplay } from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/navigation";
-
 import "./SwiperCarousel.css";
+
 import { getLibrosDestacados } from "../../services/libroService";
 import { getAutores } from "../../services/autorService";
 
@@ -18,34 +18,54 @@ export default function SwiperCarouselDestacados() {
   const nextRef = useRef(null);
   const swiperRef = useRef(null);
 
-  const normalizeEdiciones = (ediciones = [], autores = []) => {
-    return ediciones.map((ed) => {
-      const base = ed.libro ?? ed;
-      const autorRelacionado =
-        ed.autor ||
-        base.autor ||
-        autores.find(
-          (a) =>
-            a.id === base.autorId ||
-            a.id === base.autor?.id ||
-            a.id === ed.libro?.id ||
-            a.id === base.id ||
-            a._id === base.autorId ||
-            a._id === base.autor?.id
-        ) ||
-        null;
+  // Imagen placeholder
+  const placeholderImg =
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23ececec'/%3E%3Ctext x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ESin portada%3C/text%3E%3C/svg%3E";
 
-      return {
-        id: base.id ?? base._id ?? ed.id ?? Math.random(),
-        titulo: base.titulo ?? base.title ?? base.nombre ?? "Sin título",
-        portadaUrl: base.portadaUrl ?? base.portada ?? base.image ?? null,
-        precio: Number(base.precio ?? base.price ?? 0),
-        descuento: Number(base.descuento ?? base.discount ?? 0),
-        nuevo: Boolean(base.nuevo ?? base.isNew ?? false),
-        autor: autorRelacionado,
-      };
-    });
-  };
+  // Normalización con prioridad múltiple para encontrar la imagen
+  const normalizeEdiciones = (ediciones = [], autores = []) => {
+  return ediciones.map((ed) => {
+    const base = ed.libro ?? ed;
+    const autorRelacionado =
+      ed.autor ||
+      base.autor ||
+      autores.find(
+        (a) =>
+          a.id === base.autorId ||
+          a.id === base.autor?.id ||
+          a.id === ed.libro?.id ||
+          a.id === base.id ||
+          a._id === base.autorId ||
+          a._id === base.autor?.id
+      ) ||
+      null;
+
+    return {
+      id: base.id ?? base._id ?? ed.id ?? Math.random(),
+      titulo: base.titulo ?? base.nombre ?? base.title ?? "Sin título",
+      portadaUrl:
+        base.portadaUrl ??
+        base.portada ??
+        base.imagen ??
+        ed.imagen ??
+        base.image ??
+        null,
+      // se corrigio esta parte :S
+      precio: Number(
+        ed.precio_venta ??
+          base.precio ??
+          base.precio_venta ??
+          base.price ??
+          0
+      ),
+      descuento: Number(base.descuento ?? base.discount ?? 0),
+      nuevo: Boolean(base.nuevo ?? base.isNew ?? false),
+      autor: autorRelacionado,
+    };
+  });
+};
+
+
 
   const cargarLibros = async () => {
     setCargando(true);
@@ -56,13 +76,15 @@ export default function SwiperCarouselDestacados() {
         getAutores(),
       ]);
 
-      console.debug("edicionesData:", edicionesData);
-      console.debug("autoresData:", autoresData);
+      console.debug("📚 edicionesData:", edicionesData);
+      console.debug("✍ autoresData:", autoresData);
 
       const items = normalizeEdiciones(edicionesData || [], autoresData || []);
+      console.debug("✅ Libros normalizados:", items);
+
       setLibros(items);
     } catch (err) {
-      console.error("Error al cargar libros destacados:", err);
+      console.error("❌ Error al cargar libros destacados:", err);
       setError(true);
     } finally {
       setCargando(false);
@@ -73,8 +95,21 @@ export default function SwiperCarouselDestacados() {
     cargarLibros();
   }, []);
 
-  const placeholderImg =
-    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='300' viewBox='0 0 200 300'%3E%3Crect width='200' height='300' fill='%23ececec'/%3E%3Ctext x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%23999' font-family='Arial' font-size='14'%3ESin portada%3C/text%3E%3C/svg%3E";
+  // Función para resolver correctamente rutas de imagen
+  const resolveImageUrl = (imgPath) => {
+    if (!imgPath) return placeholderImg;
+
+    // Si ya es base64 o data URL
+    if (imgPath.startsWith("data:image") || imgPath.startsWith("blob:"))
+      return imgPath;
+
+    // Si es ruta absoluta
+    if (imgPath.startsWith("http") || imgPath.startsWith("/uploads"))
+      return imgPath;
+
+    // Si es relativa desde backend (ej. "images/libro1.jpg")
+    return `${import.meta.env.VITE_API_URL || "http://localhost:8080"}/${imgPath}`;
+  };
 
   return (
     <div className="carousel-section">
@@ -112,10 +147,10 @@ export default function SwiperCarouselDestacados() {
             loop={true}
             autoplay={{ delay: 3000, disableOnInteraction: false }}
             breakpoints={{
-              640: { slidesPerView: 3, spaceBetween: 20 },
-              768: { slidesPerView: 4, spaceBetween: 20 },
-              1024: { slidesPerView: 5, spaceBetween: 20 },
-              1280: { slidesPerView: 6, spaceBetween: 20 },
+              640: { slidesPerView: 3 },
+              768: { slidesPerView: 4 },
+              1024: { slidesPerView: 5 },
+              1280: { slidesPerView: 6 },
             }}
             onBeforeInit={(swiper) => {
               swiper.params.navigation.prevEl = prevRef.current;
@@ -124,7 +159,12 @@ export default function SwiperCarouselDestacados() {
             onSwiper={(swiper) => {
               swiperRef.current = swiper;
               setTimeout(() => {
-                if (swiper.navigation && prevRef.current && nextRef.current) {
+                if (
+                  swiper.navigation &&
+                  swiper.navigation.init &&
+                  prevRef.current &&
+                  nextRef.current
+                ) {
                   swiper.params.navigation.prevEl = prevRef.current;
                   swiper.params.navigation.nextEl = nextRef.current;
                   swiper.navigation.init();
@@ -143,17 +183,17 @@ export default function SwiperCarouselDestacados() {
                 <div className="libro-card">
                   <div className="libro-image-wrapper">
                     <img
-                      src={libro.portadaUrl || placeholderImg}
+                      src={resolveImageUrl(libro.portadaUrl)}
                       alt={libro.titulo}
                       className="libro-image"
-                      onError={(e) => {
-                        e.currentTarget.src = placeholderImg;
-                      }}
+                      onError={(e) => (e.currentTarget.src = placeholderImg)}
                     />
                     {libro.descuento > 0 && (
                       <div className="badge-descuento">-{libro.descuento}%</div>
                     )}
-                    {libro.nuevo && <div className="badge-nuevo">Novedades</div>}
+                    {libro.nuevo && (
+                      <div className="badge-nuevo">Novedades</div>
+                    )}
                   </div>
 
                   <div className="libro-info">
@@ -188,35 +228,13 @@ export default function SwiperCarouselDestacados() {
             ))}
           </Swiper>
 
-          <button
-            ref={prevRef}
-            className="custom-prev nav-button"
-            aria-label="Anterior"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+          <button ref={prevRef} className="custom-prev nav-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <button
-            ref={nextRef}
-            className="custom-next nav-button"
-            aria-label="Siguiente"
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
+          <button ref={nextRef} className="custom-next nav-button">
+            <svg width="24" height="24" viewBox="0 0 24 24" stroke="currentColor">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
