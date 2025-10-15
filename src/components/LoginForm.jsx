@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const LoginForm = () => {
-  const [nombre, setNombre] = useState(""); // se puede renombrar a email si prefieres
+  const [nombre, setNombre] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -23,32 +23,27 @@ const LoginForm = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: nombre,    // <-- backend espera 'email'
-          clave: password,  // <-- backend espera 'clave'
+          email: nombre,
+          clave: password,
         }),
       });
 
       if (response.ok) {
-  const data = await response.json();
-  if (data && data.token) {
-    setSuccess("Login exitoso ✅");
-    localStorage.setItem("token", data.token);          // guarda token
-    localStorage.setItem("usuario", JSON.stringify(data)); // guarda datos del usuario
-
-    // ⏳ Espera 1 segundo para mostrar el mensaje de éxito
-    setTimeout(() => {
-      navigate("/"); // va al HomePage
-      // 🔄 Recarga ligera para que aparezca el nombre del usuario logeado
-      setTimeout(() => {
-        window.location.reload();
-      }, 400);
-    }, 1000);
-  } else {
-    setError("Usuario o contraseña incorrectos");
-  }
-} else {
-  setError("Usuario o contraseña incorrectos");
-}
+        const data = await response.json();
+        if (data && data.token) {
+          setSuccess("Login exitoso ✅");
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("usuario", JSON.stringify(data));
+          setTimeout(() => {
+            navigate("/");
+            setTimeout(() => window.location.reload(), 400);
+          }, 1000);
+        } else {
+          setError("Usuario o contraseña incorrectos");
+        }
+      } else {
+        setError("Usuario o contraseña incorrectos");
+      }
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
@@ -56,64 +51,84 @@ const LoginForm = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-white p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100"
-      >
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-lg w-full bg-white p-14 rounded-2xl shadow-2xl border border-blue-100 space-y-8"
+    >
+      {/* Ícono superior */}
+      <div className="flex flex-col items-center">
+        <div className="bg-[#002B5B] text-white p-3 rounded-full mb-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-7 w-7"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4h16v13H6.5A2.5 2.5 0 004 19.5V4z"
+            />
+          </svg>
+        </div>
+        <h2 className="text-3xl font-semibold text-center text-[#001B3A] tracking-wide">
           Iniciar sesión
         </h2>
-
-        {error && <p className="text-red-600 text-sm mb-3">{error}</p>}
-        {success && <p className="text-green-600 text-sm mb-3">{success}</p>}
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700">
-            Nombre de usuario o correo
-          </label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-2 focus:ring-blue-400"
-            placeholder="Ingrese su nombre o correo"
-            required
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700">
-            Contraseña
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-2 focus:ring-blue-400"
-            placeholder="Ingrese su contraseña"
-            required
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
-        >
-          Iniciar Sesión
-        </button>
-
-        <p className="text-sm text-center mt-6 text-gray-600">
-          ¿No tienes una cuenta?{" "}
-          <Link
-            to="/register"
-            className="text-blue-600 font-medium hover:underline"
-          >
-            ¡Regístrate aquí!
-          </Link>
+        <p className="text-center text-gray-600 mt-2">
+          Ingresa tus datos para acceder a tu cuenta
         </p>
-      </form>
-    </div>
+      </div>
+
+      {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+      {success && <p className="text-green-600 text-sm text-center">{success}</p>}
+
+      <div>
+        <label className="block text-sm font-medium text-gray-800 mb-2">
+          Nombre de usuario o correo
+        </label>
+        <input
+          type="text"
+          value={nombre}
+          onChange={(e) => setNombre(e.target.value)}
+          className="w-full border border-black/60 rounded-md px-4 py-3 text-black text-base 
+                     placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-600 transition"
+          placeholder="Ingrese su nombre o correo"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-800 mb-2">
+          Contraseña
+        </label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border border-black/60 rounded-md px-4 py-3 text-black text-base 
+                     placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-600 transition"
+          placeholder="Ingrese su contraseña"
+          required
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="w-full py-3 bg-gradient-to-r from-blue-800 to-blue-500 text-white font-medium 
+                   rounded-md shadow-md hover:from-blue-700 hover:to-blue-400 transition-all duration-300"
+      >
+        Iniciar sesión
+      </button>
+
+      <p className="text-sm text-center mt-6 text-gray-700">
+        ¿No tienes una cuenta?{" "}
+        <Link to="/register" className="text-blue-700 font-semibold hover:underline">
+          ¡Regístrate aquí!
+        </Link>
+      </p>
+    </form>
   );
 };
 

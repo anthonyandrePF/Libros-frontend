@@ -1,11 +1,14 @@
-import React from 'react';
-import RegisterForm from '../components/RegisterForm';
+import React from "react";
+import RegisterForm from "../components/RegisterForm";
 
 const RegisterPage = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center">Registro</h2>
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-900 to-blue-700">
+      <div className="w-full max-w-lg p-12 space-y-8 bg-white rounded-2xl shadow-2xl border border-blue-100">
+        <h2 className="text-3xl font-semibold text-center text-blue-900 tracking-wide">
+          Bienvenido a LibroStore
+        </h2>
+        
         <RegisterForm />
       </div>
     </div>

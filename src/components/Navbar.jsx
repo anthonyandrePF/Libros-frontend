@@ -11,15 +11,50 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const storedUser = JSON.parse(sessionStorage.getItem("usuario") || "null");
-    if (storedUser) {
-      setUser(storedUser);
+  // decode JWT payload safely
+  const decodeJWT = (token) => {
+    try {
+      const payload = token.split('.')[1];
+      const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(json);
+    } catch (e) {
+      return null;
     }
+  };
+
+  useEffect(() => {
+    const loadUser = () => {
+      const raw = localStorage.getItem("usuario");
+      let u = null;
+      if (raw) {
+        try {
+          u = JSON.parse(raw);
+        } catch (e) {
+          u = raw;
+        }
+      } else {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const payload = decodeJWT(token);
+          if (payload) {
+            u = { email: payload.sub, nombre: payload.nombre || payload.name };
+          }
+        }
+      }
+      setUser(u);
+    };
+
+    loadUser();
+
+    // listen storage changes (otra pestaña / login)
+    const handleStorage = () => loadUser();
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   const handleLogout = () => {
-    sessionStorage.removeItem("usuario");
+    localStorage.removeItem("usuario");
+    localStorage.removeItem("token");
     setUser(null);
     navigate("/");
     setMenuOpen(false);
@@ -31,6 +66,10 @@ export default function Navbar() {
       navigate(`/buscar?q=${encodeURIComponent(searchQuery)}`);
     }
   };
+
+  const displayName = user
+    ? (user.nombre || user.name || user.email || (typeof user === "string" ? user : "Usuario"))
+    : "Mi Cuenta";
 
   const categories = [
     {
@@ -101,7 +140,7 @@ export default function Navbar() {
                   className="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <User className="w-5 h-5" />
-                  <span className="text-sm font-medium">{user ? user.nombre : "Mi Cuenta"}</span>
+                  <span className="text-sm font-medium">{displayName}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
                 </button>
 
@@ -132,7 +171,7 @@ export default function Navbar() {
                           <Link to="/pedidos" onClick={() => setMenuOpen(false)} className="block px-4 py-2 hover:bg-gray-100">
                             Mis pedidos
                           </Link>
-                          <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100">
+                          <button onClick={() => { handleLogout(); setMenuOpen(false); }} className="block w-full text-left px-4 py-2 bg-red-500 text-white hover:bg-red-600">
                             Cerrar sesión
                           </button>
                         </>
@@ -277,7 +316,7 @@ export default function Navbar() {
             </div>
             <div className="mt-6 pt-4 border-t">
               <Link to="/libros" onClick={() => setCategoriesOpen(false)} className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                Ver todos los libros →
+                Ver todos los libros → 
               </Link>
             </div>
           </motion.div>
