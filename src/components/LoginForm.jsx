@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 const LoginForm = () => {
-  const [nombre, setNombre] = useState(""); // Cambiamos email → nombre
+  const [nombre, setNombre] = useState(""); // se puede renombrar a email si prefieres
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -19,23 +19,21 @@ const LoginForm = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/RestConectados/usuarios/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nombre: nombre,
-            clave: password, // backend espera 'clave'
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:8080/RestConectados/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: nombre,    // <-- backend espera 'email'
+          clave: password,  // <-- backend espera 'clave'
+        }),
+      });
 
       if (response.ok) {
         const data = await response.json();
-        if (data) {
+        if (data && data.token) {
           setSuccess("Login exitoso ✅");
-          localStorage.setItem("usuario", JSON.stringify(data));
+          localStorage.setItem("token", data.token);          // guarda token
+          localStorage.setItem("usuario", JSON.stringify(data)); // opcional
           setTimeout(() => navigate("/"), 1000);
         } else {
           setError("Usuario o contraseña incorrectos");
@@ -64,14 +62,14 @@ const LoginForm = () => {
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">
-            Nombre de usuario
+            Nombre de usuario o correo
           </label>
           <input
-            type="text" 
+            type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-2 focus:ring-blue-400"
-            placeholder="Ingrese su nombre"
+            placeholder="Ingrese su nombre o correo"
             required
           />
         </div>
