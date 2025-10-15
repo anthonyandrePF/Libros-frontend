@@ -29,18 +29,26 @@ const LoginForm = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        if (data && data.token) {
-          setSuccess("Login exitoso ✅");
-          localStorage.setItem("token", data.token);          // guarda token
-          localStorage.setItem("usuario", JSON.stringify(data)); // opcional
-          setTimeout(() => navigate("/"), 1000);
-        } else {
-          setError("Usuario o contraseña incorrectos");
-        }
-      } else {
-        setError("Usuario o contraseña incorrectos");
-      }
+  const data = await response.json();
+  if (data && data.token) {
+    setSuccess("Login exitoso ✅");
+    localStorage.setItem("token", data.token);          // guarda token
+    localStorage.setItem("usuario", JSON.stringify(data)); // guarda datos del usuario
+
+    // ⏳ Espera 1 segundo para mostrar el mensaje de éxito
+    setTimeout(() => {
+      navigate("/"); // va al HomePage
+      // 🔄 Recarga ligera para que aparezca el nombre del usuario logeado
+      setTimeout(() => {
+        window.location.reload();
+      }, 400);
+    }, 1000);
+  } else {
+    setError("Usuario o contraseña incorrectos");
+  }
+} else {
+  setError("Usuario o contraseña incorrectos");
+}
     } catch (err) {
       console.error(err);
       setError("Error de conexión con el servidor");
